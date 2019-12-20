@@ -12,6 +12,14 @@ namespace hp;
 
 class BaseHP
 {
+    /**
+     * @var \hp\web\Application
+     */
+    public static $app;
+
+    /**
+     * Router对象的实例
+     */
     public static $router = null;
 
     /**
@@ -24,9 +32,15 @@ class BaseHP
     ];
 
 
+    /**
+     * 自动加载器回调函数
+     * 参考Yii2
+     * @param $className
+     */
     public static function autoload($className)
     {
         if (strpos($className, '\\') !== false) {
+            //从别名路径数组中取对应的命名空间，判断类是否存在，仅支持PSR-4
             $classFile = static::getAlias('@' . str_replace('\\', '/', $className) . '.php', false);
             if ($classFile === false || !is_file($classFile)) {
                 return;
@@ -38,10 +52,16 @@ class BaseHP
         include $classFile;
     }
 
+    /**
+     * 获取别名路径
+     * 参考Yii2
+     * @param $alias
+     * @return bool|mixed|string
+     */
     public static function getAlias($alias)
     {
         if (strncmp($alias, '@', 1)) {
-            // not an alias
+            //不是一个别名
             return $alias;
         }
 
@@ -63,6 +83,12 @@ class BaseHP
         return false;
     }
 
+    /**
+     * 设置一个别名路径
+     * 参考Yii2
+     * @param $alias
+     * @param $path
+     */
     public static function setAlias($alias, $path)
     {
         if (strncmp($alias, '@', 1)) {
@@ -99,4 +125,21 @@ class BaseHP
             }
         }
     }
+
+    /**
+     * 配置对象的属性
+     * @param $object object
+     * @param $properties array
+     * @return object
+     */
+    public static function configure($object, $properties)
+    {
+        if(empty($properties)) return $object;
+        foreach ($properties as $name => $value) {
+            $object->$name = $value;
+        }
+
+        return $object;
+    }
+
 }

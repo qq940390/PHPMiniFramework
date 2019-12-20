@@ -14,16 +14,23 @@ use HP;
 
 class Application extends \hp\base\Application
 {
-    protected $config;
 
-    public function __construct($cfg)
+    /**
+     * @var Controller the currently active controller instance
+     */
+    public $controller;
+
+
+    /**
+     * 处理 request
+     * @param $router \hp\route\Router
+     * @return mixed
+     */
+    public function handleRequest($router)
     {
-        $this->config = $cfg;
-    }
-
-    public function run(){
-        if(HP::$router == null) HP::$router = new \hp\route\Router();
-        HP::$router->run();
+        $route = $router->resolve();
+        $result = $this->runAction($route);
+        return $result;
     }
 
 }

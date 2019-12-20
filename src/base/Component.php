@@ -1,6 +1,6 @@
 <?php
 /**
- * Component.php
+ * 组件类
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn

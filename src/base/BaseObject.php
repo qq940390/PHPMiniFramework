@@ -1,6 +1,6 @@
 <?php
 /**
- * BaseObject.php
+ * 基本类
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -9,7 +9,6 @@
  */
 
 namespace hp\base;
-
 
 class BaseObject
 {
@@ -20,6 +19,16 @@ class BaseObject
     public static function className()
     {
         return get_called_class();
+    }
+
+    /**
+     * BaseObject constructor.
+     *
+     * @param array $config
+     */
+    public function __construct()
+    {
+        $this->init();
     }
 
     /**
@@ -84,6 +93,18 @@ class BaseObject
         if (method_exists($this, $setter)) {
             $this->$setter(null);
         }
+    }
+
+    /**
+     * 魔术方法 __call
+     * @param string $name
+     * @param array $params
+     * @throws UnknownMethodException when calling unknown method
+     * @return mixed the method return value
+     */
+    public function __call($name, $params)
+    {
+        throw new UnknownMethodException('Calling unknown method: ' . get_class($this) . "::$name()");
     }
 
     /**
