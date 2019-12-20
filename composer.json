@@ -1,0 +1,28 @@
+{
+    "name": "jinhaisoft/hp",
+    "description": "A mini PHP framework",
+    "keywords": [
+        "hp",
+        "framework"
+    ],
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "jinhai",
+            "email": "940390@qq.com"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/qq940390/PHPMiniFramework/issues?state=open",
+        "source": "https://github.com/qq940390/PHPMiniFramework"
+    },
+    "require": {
+        "php": ">=5.4.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "hp\\": "src"
+        }
+    }
+}
