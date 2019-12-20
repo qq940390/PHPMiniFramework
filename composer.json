@@ -17,6 +17,7 @@
         "issues": "https://github.com/qq940390/PHPMiniFramework/issues?state=open",
         "source": "https://github.com/qq940390/PHPMiniFramework"
     },
+    "minimum-stability": "dev",
     "require": {
         "php": ">=5.4.0"
     },
