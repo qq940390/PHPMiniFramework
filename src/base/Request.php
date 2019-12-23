@@ -1,6 +1,6 @@
 <?php
 /**
- * 组件类
+ * Request.php
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -10,7 +10,8 @@
 
 namespace wp\base;
 
-class Component extends BaseObject
-{
 
+abstract class Request extends Component
+{
+    abstract public function resolve();
 }

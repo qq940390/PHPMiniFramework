@@ -8,11 +8,11 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace hp\web;
+namespace wp\web;
 
-use HP;
+use WP;
 
-class Application extends \hp\base\Application
+class Application extends \wp\base\Application
 {
 
     /**
@@ -23,12 +23,12 @@ class Application extends \hp\base\Application
 
     /**
      * 处理 request
-     * @param $router \hp\route\Router
+     * @param Request $request
      * @return mixed
      */
-    public function handleRequest($router)
+    public function handleRequest($request)
     {
-        $route = $router->resolve();
+        $route = $request->resolve();
         $result = $this->runAction($route);
         return $result;
     }

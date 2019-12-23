@@ -1,6 +1,6 @@
 <?php
 /**
- * 路由基类
+ * Request.php
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -8,14 +8,11 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace hp\route;
+namespace wp\web;
 
-class Router
+
+class Request extends \wp\base\Request
 {
-    public static $route = '';
-    public static $controller = '';
-    public static $action = '';
-
 
     public function resolve()
     {
@@ -40,4 +37,5 @@ class Router
         }
         return false;
     }
+
 }

@@ -8,7 +8,7 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace hp\base;
+namespace wp\base;
 
 
 class ErrorHandler

@@ -1,6 +1,6 @@
 <?php
 /**
- * HP.php
+ * WP.php
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -8,11 +8,11 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-require __DIR__ . '/BaseHP.php';
+require __DIR__ . '/BaseWP.php';
 
-class HP extends \hp\BaseHP
+class WP extends \wp\BaseWP
 {
 
 }
 
-spl_autoload_register(['HP', 'autoload'], true, true);
+spl_autoload_register(['WP', 'autoload'], true, true);

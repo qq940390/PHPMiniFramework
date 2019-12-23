@@ -1,6 +1,6 @@
 <?php
 /**
- * BaseHP.php
+ * BaseWP.php
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -8,19 +8,14 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace hp;
+namespace wp;
 
-class BaseHP
+class BaseWP
 {
     /**
-     * @var \hp\web\Application
+     * @var \wp\web\Application
      */
     public static $app;
-
-    /**
-     * Router对象的实例
-     */
-    public static $router = null;
 
     /**
      * @var array registered path aliases
@@ -28,7 +23,7 @@ class BaseHP
      * @see setAlias()
      */
     public static $aliases = [
-        '@hp' => __DIR__,
+        '@wp' => __DIR__,
     ];
 
 

@@ -1,8 +1,8 @@
 {
-    "name": "jinhaisoft/hp",
+    "name": "jinhaisoft/wp",
     "description": "A mini PHP framework",
     "keywords": [
-        "hp",
+        "wp",
         "framework"
     ],
     "type": "library",
@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "hp\\": "src"
+            "wp\\": "src"
         }
     }
 }

@@ -8,9 +8,9 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace hp\base;
+namespace wp\base;
 
-use HP;
+use WP;
 
 abstract class Application extends Component
 {
@@ -18,11 +18,6 @@ abstract class Application extends Component
      * @var Controller the currently active controller instance
      */
     public $controller;
-
-    /**
-     * @var string 控制器命名空间前缀
-     */
-    public $controllerNamespace = 'app\\controller';
 
     /**
      * @var string 默认控制器
@@ -37,7 +32,7 @@ abstract class Application extends Component
      */
     public function __construct($config = [])
     {
-        HP::$app = $this;
+        WP::$app = $this;
 
         //注册错误处理
         (new ErrorHandler())->register();
@@ -49,7 +44,7 @@ abstract class Application extends Component
     public function run()
     {
         //调用路由组件，处理 request
-        $response = $this->handleRequest(new \hp\route\Router());
+        $response = $this->handleRequest(new \wp\web\Request());
         echo $response;
     }
 
@@ -66,15 +61,17 @@ abstract class Application extends Component
         $parts = $this->createController($route);
         if (is_array($parts)) {
             list($controller, $actionID) = $parts;
-            $oldController = HP::$app->controller;
-            HP::$app->controller = $controller;
-            /* @var \hp\base\Controller $controller */
-            $result = $controller->runAction($actionID);
+            $oldController = WP::$app->controller;
+            WP::$app->controller = $controller;
+            /* @var \wp\base\Controller $controller */
+            $result = WP::$app->controller->runAction($actionID);
             if ($oldController !== null) {
-                HP::$app->controller = $oldController;
+                WP::$app->controller = $oldController;
             }
 
             return $result;
+        } else {
+            exit('Wrong Controller!');
         }
     }
 
@@ -96,7 +93,7 @@ abstract class Application extends Component
         $className = preg_replace_callback('%-([a-z0-9_])%i', function ($matches) {
                 return ucfirst($matches[1]);
             }, ucfirst($id));
-        $className = $this->controllerNamespace . '\\' . $className;
+        $className = 'app\\controller\\' . $className;
         try {
             $controller = new $className();
             return $controller === null ? false : [$controller, $action];
