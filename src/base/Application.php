@@ -22,7 +22,7 @@ abstract class Application extends Component
     /**
      * @var string 默认控制器
      */
-    public $defaultRoute = 'index';
+    public $defaultController = 'index';
 
 
     /**
@@ -44,8 +44,10 @@ abstract class Application extends Component
     public function run()
     {
         //调用路由组件，处理 request
+        /* @var $response \wp\web\Response */
         $response = $this->handleRequest(new \wp\web\Request());
-        echo $response;
+
+        $response->send();
     }
 
     abstract public function handleRequest($request);
@@ -78,7 +80,7 @@ abstract class Application extends Component
     public function createController($route)
     {
         if ($route === '') {
-            $route = $this->defaultRoute;
+            $route = $this->defaultController;
         }
 
         $route = trim($route, '/');
@@ -94,12 +96,14 @@ abstract class Application extends Component
                 return ucfirst($matches[1]);
             }, ucfirst($id));
         $className = 'app\\controller\\' . $className;
-        try {
-            $controller = new $className();
-            return $controller === null ? false : [$controller, $action];
-        } catch (\Exception $e) {
+        $controller = new \ReflectionClass($className);
+        if(!$controller) {
             throw new UnknownClassException('Calling unknown classname: ' . $className);
             return false;
         }
+        if($controller->isInstantiable()) {
+            $controller = $controller->newInstance();
+        }
+        return [$controller, $action];
     }
 }

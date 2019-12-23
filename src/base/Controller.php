@@ -16,14 +16,14 @@ class Controller extends Component
     /**
      * @var string 默认action
      */
-    public $defaultAction = 'index';
+    public $defaultAction = 'Index';
 
 
     /**
      * 执行 action
-     * @param string $actionID
-     * @param array $params
+     * @param $actionID
      * @return mixed
+     * @throws \ReflectionException
      */
     public function runAction($actionID)
     {
@@ -32,9 +32,10 @@ class Controller extends Component
             return ucfirst($matches[1]);
         }, ucfirst($actionID));
 
-        $actionID = 'action'.$actionID;
-        if($this->hasMethod($actionID)) {
-            return $this->$actionID();
+        $actionID = 'action'.($actionID ? $actionID : $this->defaultAction);
+        $inlineAction = new \ReflectionMethod(self::className(), $actionID);
+        if($inlineAction) {
+            return $inlineAction->invoke($this, $actionID);
         } else {
             throw new UnknownMethodException('Calling unknown method: ' . get_class($this) . "::$actionID()");
         }

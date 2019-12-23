@@ -16,21 +16,36 @@ class Application extends \wp\base\Application
 {
 
     /**
-     * @var Controller the currently active controller instance
+     * @var string JSONP callback function
      */
-    public $controller;
+    public $jsonCallback = '';
 
 
     /**
+     * init
+     */
+    public function init()
+    {
+        $this->jsonCallback = $_GET['callback'];
+    }
+
+    /**
      * 处理 request
-     * @param Request $request
-     * @return mixed
+     * @param $request
+     * @return mixed|Response|null
      */
     public function handleRequest($request)
     {
         $route = $request->resolve();
         $result = $this->runAction($route);
-        return $result;
+
+        if($result instanceof Response) {
+            return $result;
+        } else {
+            $response = new Response();
+            $response->data = $result;
+            return $response;
+        }
     }
 
 }
