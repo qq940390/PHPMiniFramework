@@ -25,7 +25,7 @@ class BasePM
     public static $app;
 
     /**
-     * @var \pm\helper\DBHelper
+     * @var \pm\db\Database
      */
     public static $db;
 

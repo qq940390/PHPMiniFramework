@@ -33,8 +33,7 @@ abstract class Application extends Module
     public function __construct($config = [])
     {
         PM::$app = $this;
-        /* @var $db \pm\helper\DBHelper */
-        PM::$db = new \pm\helper\DBHelper($config['db']);
+        PM::$db = \pm\helper\DBHelper::getInstance($config['db']);
 
         //注册错误处理
         (new ErrorHandler())->register();

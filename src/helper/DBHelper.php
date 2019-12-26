@@ -19,12 +19,14 @@ namespace pm\helper;
  */
 class DBHelper {
 
-    protected $instance = null;
+    /**
+     * @var \pm\db\Database|null
+     */
+    protected static $instance = null;
 
-    function __construct($config)
-    {
-        if($this->instance == null) {
-            $this->instance = new \pm\db\Database([
+    public static function getInstance($config) {
+        if(self::$instance == null) {
+            self::$instance = new \pm\db\Database([
                 'host' => $config['host'],  // 服务器地址
                 'port' => $config['port'],  // 端口
                 'username' => $config['username'],   // 用户
@@ -36,8 +38,7 @@ class DBHelper {
                 'debug' => isset($config['debug']) ? $config['debug'] : false, //是否是Debug模式
             ]);
         }
-
-        return $this->instance;
+        return self::$instance;
     }
 
 }
