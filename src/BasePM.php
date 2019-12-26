@@ -10,12 +10,24 @@
 
 namespace pm;
 
+/**
+ * Class BasePM
+ *
+ * @property $app \pm\web\Application
+ * @property $db \pm\helper\DBHelper
+ * @package pm
+ */
 class BasePM
 {
     /**
      * @var \pm\web\Application
      */
     public static $app;
+
+    /**
+     * @var \pm\helper\DBHelper
+     */
+    public static $db;
 
     /**
      * @var array registered path aliases
