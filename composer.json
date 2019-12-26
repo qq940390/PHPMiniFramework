@@ -1,8 +1,8 @@
 {
-    "name": "jinhaisoft/wp",
+    "name": "jinhaisoft/pm",
     "description": "A mini PHP framework",
     "keywords": [
-        "wp",
+        "pm",
         "framework"
     ],
     "type": "library",
@@ -23,7 +23,7 @@
     },
     "autoload": {
         "psr-4": {
-            "wp\\": "src"
+            "pm\\": "src"
         }
     }
 }
