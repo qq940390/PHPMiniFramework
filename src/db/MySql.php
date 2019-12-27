@@ -10,19 +10,16 @@
 
 namespace pm\db;
 
+use PM;
+
 use pm\exception\DbException;
 
 /**
- * 数据库类
+ * MySql 数据库类
  *
- * @copyright [JWP] wujinhai
- * @link http://wujinhai.cn/
- * @author wujinhai<940390@qq.com>
- * @package JWP\Helpers
- * @subpackage JDB
- * @version 1.0
+ * @package pm\db
  */
-class Database {
+class MySql {
 
     /**
      * @var object 数据库连接
@@ -33,23 +30,25 @@ class Database {
     /**
      * 初始化
      *
-     * @param array $config
+     * @param array $dbConfig
      * @return void
      */
-    function __construct($config) {
-        $driver = function_exists('mysqli_close') ? '\\pm\\db\\mysql\\MySqli' : '\\pm\\db\\mysql\\MySql';
-        $this->db = new $driver($config);
-        $this->db->setConfig($config);
-        $this->db->connect();
+    function __construct($dbConfig) {
+        $dbClass = '\\pm\\db\\driver\\MySqlDriver';
+        if(class_exists('\mysqli')) {
+            $dbClass = '\\pm\\db\\driver\\MySqliDriver';
+        }
+        $dbConfig['class'] = $dbClass;
+        $this->db = new $dbClass($dbConfig);
     }
 
 
     /**
-     * 返回数据库对象
+     * 返回数据库对象实例
      *
      * @return object
      */
-    public function object() {
+    public function instance() {
         return $this->db;
     }
 
@@ -69,12 +68,12 @@ class Database {
      * 删除数据
      *
      * @param string $table
-     * @param mixed $condition
+     * @param array|string $condition
      * @param integer $limit
-     * @param bool $unbuffered
-     * @return mixed
+     * @return bool|array
+     * @throws DbException
      */
-    public function delete($table, $condition, $limit = 0, $unbuffered = true) {
+    public function delete($table, $condition, $limit = 0) {
         if (empty($condition)) {
             return false;
         } elseif (is_array($condition)) {
@@ -83,12 +82,12 @@ class Database {
             } else {
                 $where = $this->implodeFieldValue($condition, ' AND ');
             }
-        } else {
+        } elseif(is_string($condition)) {
             $where = $condition;
         }
         $limit = intval($limit);
         $sql = "DELETE FROM " . $this->table($table) . " WHERE $where " . ($limit > 0 ? "LIMIT $limit" : '');
-        return $this->query($sql, ($unbuffered ? 'UNBUFFERED' : ''));
+        return $this->query($sql);
     }
 
 
@@ -121,11 +120,10 @@ class Database {
      * @param string $table
      * @param array $data
      * @param mixed $condition
-     * @param bool $unbuffered
      * @param bool $lowPriority
      * @return mixed
      */
-    public function update($table, $data, $condition, $unbuffered = false, $lowPriority = false) {
+    public function update($table, $data, $condition, $lowPriority = false) {
         $sql = $this->implode($data);
         if(empty($sql)) {
             return false;
@@ -139,7 +137,7 @@ class Database {
         } else {
             $where = $condition;
         }
-        $res = $this->query("$cmd $table SET $sql WHERE $where", $unbuffered ? 'UNBUFFERED' : '');
+        $res = $this->query("$cmd $table SET $sql WHERE $where");
         return $res;
     }
 
@@ -157,12 +155,12 @@ class Database {
     /**
      * 获取数据
      *
-     * @param object $resourceid
+     * @param object $resource
      * @param int $type
      * @return mixed
      */
-    public function fetch($resourceid, $type = MYSQL_ASSOC) {
-        return $this->db->fetchArray($resourceid, $type);
+    public function fetch($resource, $type = MYSQL_ASSOC) {
+        return $this->db->fetchArray($resource, $type);
     }
 
 
@@ -187,17 +185,17 @@ class Database {
      *
      * @param string $sql
      * @param array $arg
-     * @param string $keyfield
+     * @param string $keyField
      * @param bool $silent
      * @return mixed
      */
-    public function fetchAll($sql, $arg = array(), $keyfield = '', $silent=false) {
+    public function fetchAll($sql, $arg = array(), $keyField = '', $silent=false) {
 
         $data = array();
         $query = $this->query($sql, $arg, $silent, false);
         while ($row = $this->db->fetchArray($query)) {
-            if ($keyfield && isset($row[$keyfield])) {
-                $data[$row[$keyfield]] = $row;
+            if ($keyField && isset($row[$keyField])) {
+                $data[$row[$keyField]] = $row;
             } else {
                 $data[] = $row;
             }
@@ -210,12 +208,12 @@ class Database {
     /**
      * 获取结果
      *
-     * @param object $resourceid
+     * @param object $resource
      * @param integer $row
      * @return mixed
      */
-    public function result($resourceid, $row = 0) {
-        return $this->db->result($resourceid, $row);
+    public function result($resource, $row = 0) {
+        return $this->db->result($resource, $row);
     }
 
 
@@ -241,23 +239,21 @@ class Database {
      * @param string $sql
      * @param array $arg
      * @param bool $silent
-     * @param bool $unbuffered
      * @return mixed
+     * @throws DbException
      */
-    public function query($sql, $arg = array(), $silent = false, $unbuffered = false) {
+    public function query($sql, $arg = array(), $silent = false) {
         if (!empty($arg)) {
             if (is_array($arg)) {
                 $sql = $this->format($sql, $arg);
             } elseif ($arg === 'SILENT') {
                 $silent = true;
 
-            } elseif ($arg === 'UNBUFFERED') {
-                $unbuffered = true;
             }
         }
 
-        $ret = $this->db->query($sql, $silent, $unbuffered);
-        if (!$unbuffered && $ret) {
+        $ret = $this->db->query($sql, $silent);
+        if ($ret) {
             $cmd = trim(strtoupper(substr($sql, 0, strpos($sql, ' '))));
             if ($cmd === 'SELECT') {
 
@@ -274,11 +270,11 @@ class Database {
     /**
      * 结果行数
      *
-     * @param object $resourceid
+     * @param object $resource
      * @return int
      */
-    public function numRows($resourceid) {
-        return $this->db->numRows($resourceid);
+    public function numRows($resource) {
+        return $this->db->numRows($resource);
     }
 
 
@@ -327,10 +323,10 @@ class Database {
      * 处理字符串
      *
      * @param mixed $str
-     * @param bool $noarray
+     * @param bool $noArray
      * @return mixed
      */
-    public function quote($str, $noarray = false) {
+    public function quote($str, $noArray = false) {
 
         if (is_string($str))
             return '\'' . addslashes($str) . '\'';
@@ -339,7 +335,7 @@ class Database {
             return '\'' . $str . '\'';
 
         if (is_array($str)) {
-            if($noarray === false) {
+            if($noArray === false) {
                 foreach ($str as &$v) {
                     $v = $this->quote($v, true);
                 }
@@ -421,6 +417,7 @@ class Database {
      * @param mixed $val
      * @param string $glue
      * @return mixed
+     * @throws DbException
      */
     public function field($field, $val, $glue = '=') {
 
@@ -505,6 +502,7 @@ class Database {
      * @param string $sql
      * @param array $arg
      * @return string
+     * @throws DbException
      */
     public function format($sql, $arg) {
         $count = substr_count($sql, '%');

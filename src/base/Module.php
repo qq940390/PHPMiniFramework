@@ -24,8 +24,8 @@ class Module extends Component
     /**
      * 执行控制器方法
      * @param $route
-     * @param array $params
      * @return mixed
+     * @throws \ReflectionException
      */
     public function runAction($route)
     {
@@ -51,6 +51,7 @@ class Module extends Component
      * @param $route
      * @return array|bool
      * @throws \ReflectionException
+     * @throws \pm\exception\UnknownClassException
      */
     public function createController($route)
     {
@@ -81,4 +82,5 @@ class Module extends Component
         }
         return [$controller, $action];
     }
+
 }

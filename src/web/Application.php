@@ -59,4 +59,12 @@ class Application extends \pm\base\Application
         }
     }
 
+    /**
+     * 获取当前控制器
+     * @return \pm\base\Controller
+     */
+    public function getController() {
+        return $this->controller;
+    }
+
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * MySql.php
+ * MySqlDriver.php
  *
  * @author wujinhai, 940390@qq.com
  * @website http://wujinhai.cn
@@ -8,66 +8,57 @@
  * @copyright Copyright (C) 2019 wujinhai
  */
 
-namespace pm\db\mysql;
+namespace pm\db\driver;
 
+use pm\exception\DbException;
 
 /**
- * DB驱动类 MySql
+ * DB驱动类 MySqlDriver
  *
- * @copyright [JWP] wujinhai
- * @link http://wujinhai.cn/
- * @author wujinhai<940390@qq.com>
- * @package JWP\Helpers
- * @subpackage JDB
- * @version 1.0
+ * @package pm\db\mysql
  */
-class MySql{
+class MySqlDriver
+{
 
     /**
      * @var string 表前缀
      */
-    var $prefix;
+    private $prefix;
 
     /**
      * @var string 版本号
      */
-    var $version = '';
+    private $version = '';
 
     /**
-     * @var int 查询数量
+     * @var int 查询数
      */
-    var $querynum = 0;
-
-    /**
-     * @var int 从库ID
-     */
-    var $slaveid = 0;
+    private $queryNum = 0;
 
     /**
      * @var object 当前连接
      */
-    var $curlink;
+    private $currentLink;
 
     /**
      * @var array 连接数组
      */
-    var $link = array();
+    private $links = [];
 
     /**
      * @var array 配置
      */
-    var $config = array();
+    private $config = [];
 
     /**
-     * @var bool 调试
+     * @var bool 调试模式
      */
-    var $debug = false;
+    private $debug = false;
 
     /**
-     * @var array 调试语句
+     * @var array 调试信息
      */
-    var $sqldebug = array();
-
+    private $sqlDebug = [];
 
 
     /**
@@ -76,40 +67,23 @@ class MySql{
      * @param array $config 配置
      * @return void
      */
-    function __construct($config = array()) {
-        if(!empty($config)) {
-            $this->setConfig($config);
-        } else {
-            $this->halt('config_db_not_found');
-        }
-    }
-
-
-    /**
-     * 设置配置
-     *
-     * @param array $config 配置
-     * @return void
-     */
-    public function setConfig($config) {
-        $this->config = &$config;
+    function __construct($config) {
+        $this->config = $config;
         $this->debug = $config['debug'];
         $this->prefix = $config['prefix'];
+        $this->connect();
     }
-
 
     /**
      * 连接
-     *
-     * @return void
      */
-    public function connect() {
+    private function connect() {
 
         if(empty($this->config)) {
             $this->halt('config_db_not_found');
         }
 
-        $this->link = $this->_dbconnect(
+        $this->currentLink = $this->_dbconnect(
             $this->config['host'],
             $this->config['port'],
             $this->config['username'],
@@ -118,13 +92,11 @@ class MySql{
             $this->config['dbname'],
             $this->config['pconnect']
         );
-        $this->curlink = $this->link;
-
+        $this->links[] = $this->currentLink;
     }
 
-
     /**
-     * 连接
+     * 构造数据库连接
      *
      * @param string $host
      * @param int $port
@@ -145,7 +117,7 @@ class MySql{
         if(!$link) {
             $halt && $this->halt('notconnect', $this->errno());
         } else {
-            $this->curlink = $link;
+            $this->currentLink = $link;
             if($this->version() > '4.1') {
                 $charset = $charset ? $charset : $this->config['charset'];
                 $serverset = $charset ? 'character_set_connection='.$charset.', character_set_results='.$charset.', character_set_client=binary' : '';
@@ -157,6 +129,35 @@ class MySql{
         return $link;
     }
 
+    /**
+     * 错误信息
+     *
+     * @return mixed
+     */
+    private function error() {
+        return (($this->currentLink) ? mysql_error($this->currentLink) : mysql_error());
+    }
+
+    /**
+     * 错误号
+     *
+     * @return mixed
+     */
+    private function errno() {
+        return intval(($this->currentLink) ? mysql_errno($this->currentLink) : mysql_errno());
+    }
+
+    /**
+     * 抛出异常
+     *
+     * @param string $message
+     * @param integer $code
+     * @param string $sql
+     * @throws DbException
+     */
+    private function halt($message = '', $code = 0, $sql = '') {
+        throw new DbException($message, $code, $sql);
+    }
 
     /**
      * 表名
@@ -168,7 +169,6 @@ class MySql{
         return $this->prefix.$tablename;
     }
 
-
     /**
      * 选择数据库
      *
@@ -176,9 +176,8 @@ class MySql{
      * @return object
      */
     public function selectDb($dbname) {
-        return mysql_select_db($dbname, $this->curlink);
+        return mysql_select_db($dbname, $this->currentLink);
     }
-
 
     /**
      * 获取数据
@@ -192,9 +191,8 @@ class MySql{
         return mysql_fetch_array($query, $resultType);
     }
 
-
     /**
-     * 获取首个数据
+     * 获取第一个
      *
      * @param string $sql
      * @return array
@@ -202,7 +200,6 @@ class MySql{
     public function fetchFirst($sql) {
         return $this->fetchArray($this->query($sql));
     }
-
 
     /**
      * 第一条结果
@@ -213,7 +210,6 @@ class MySql{
     public function resultFirst($sql) {
         return $this->result($this->query($sql), 0);
     }
-
 
     /**
      * 查询
@@ -238,7 +234,7 @@ class MySql{
 
         $func = $unbuffered ? 'mysql_unbuffered_query' : 'mysql_query';
 
-        if(!($query = $func($sql, $this->curlink))) {
+        if(!($query = $func($sql, $this->currentLink))) {
             if(in_array($this->errno(), array(2006, 2013)) && substr($silent, 0, 5) != 'RETRY') {
                 $this->connect();
                 return $this->query($sql, 'RETRY'.$silent);
@@ -249,13 +245,12 @@ class MySql{
         }
 
         if($this->debug) {
-            $this->sqldebug[] = array($sql, number_format((microtime(true) - $starttime), 6), debug_backtrace(), $this->curlink);
+            $this->sqlDebug[] = array($sql, number_format((microtime(true) - $starttime), 6), debug_backtrace(), $this->currentLink);
         }
 
-        $this->querynum++;
+        $this->queryNum++;
         return $query;
     }
-
 
     /**
      * 影响的行数
@@ -263,29 +258,8 @@ class MySql{
      * @return int
      */
     public function affectedRows() {
-        return mysql_affected_rows($this->curlink);
+        return mysql_affected_rows($this->currentLink);
     }
-
-
-    /**
-     * 错误信息
-     *
-     * @return mixed
-     */
-    private function error() {
-        return (($this->curlink) ? mysql_error($this->curlink) : mysql_error());
-    }
-
-
-    /**
-     * 错误号
-     *
-     * @return mixed
-     */
-    private function errno() {
-        return intval(($this->curlink) ? mysql_errno($this->curlink) : mysql_errno());
-    }
-
 
     /**
      * 结果
@@ -299,7 +273,6 @@ class MySql{
         return $query;
     }
 
-
     /**
      * 结果行数
      *
@@ -311,7 +284,6 @@ class MySql{
         return $query;
     }
 
-
     /**
      * 结果列数
      *
@@ -321,7 +293,6 @@ class MySql{
     public function numFields($query) {
         return mysql_num_fields($query);
     }
-
 
     /**
      * 释放结果
@@ -333,39 +304,35 @@ class MySql{
         return mysql_free_result($query);
     }
 
-
     /**
-     * 最后插入的ID
+     * 获取最后插入ID
      *
      * @return int
      */
     public function insertId() {
-        return ($id = mysql_insert_id($this->curlink)) >= 0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0);
+        return ($id = mysql_insert_id($this->currentLink)) >= 0 ? $id : $this->result($this->query("SELECT last_insert_id()"), 0);
     }
 
-
     /**
-     * 获取行
+     * 获取行数据
      *
      * @param string $query
-     * @return mixed
+     * @return array
      */
     public function fetchRow($query) {
         $query = mysql_fetch_row($query);
         return $query;
     }
 
-
     /**
-     * 获取列
+     * 获取列数据
      *
      * @param string $query
-     * @return mixed
+     * @return array
      */
     public function fetchFields($query) {
         return mysql_fetch_field($query);
     }
-
 
     /**
      * 版本号
@@ -374,14 +341,13 @@ class MySql{
      */
     public function version() {
         if(empty($this->version)) {
-            $this->version = mysql_get_server_info($this->curlink);
+            $this->version = mysql_get_server_info($this->currentLink);
         }
         return $this->version;
     }
 
-
     /**
-     * 处理字符串
+     * 字符串处理
      *
      * @param string $str
      * @return string
@@ -390,27 +356,13 @@ class MySql{
         return addslashes($str);
     }
 
-
     /**
      * 关闭连接
      *
      * @return bool
      */
     public function close() {
-        return mysql_close($this->curlink);
-    }
-
-
-    /**
-     * 异常处理
-     *
-     * @param string $message
-     * @param integer $code
-     * @param string $sql
-     * @return void
-     */
-    public function halt($message = '', $code = 0, $sql = '') {
-        throw new \pm\exception\DbException($message, $code, $sql);
+        return mysql_close($this->currentLink);
     }
 
 }

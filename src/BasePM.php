@@ -40,6 +40,20 @@ class BasePM
 
 
     /**
+     * 调试输出
+     * @param $mixed
+     */
+    public static function debug($mixed)
+    {
+        if(is_array($mixed)) {
+            print_r($mixed);
+        } elseif (is_string($mixed)) {
+            echo $mixed;
+        }
+        exit;
+    }
+
+    /**
      * 自动加载器回调函数
      * 参考Yii2
      * @param $className
@@ -147,6 +161,31 @@ class BasePM
         }
 
         return $object;
+    }
+
+    /**
+     * 创建对象
+     * @param string|array|callable $type
+     * @param string|array $param
+     * @return object
+     * @todo 尚未实现依赖注入
+     */
+    public static function createObject($type, array $param = []) {
+        if(is_string($type)) {
+            $class = '\\' . strtr(trim($type, '\\'), ['.' => '\\']);
+        } elseif (is_array($type)) {
+            $class = '\\' . strtr(trim($type['class'], '\\'), ['.' => '\\']);
+            unset($type['class']);
+        } else {
+            $class = '';
+            exit($class.' not exists');
+        }
+        try {
+            $reflectClass = new \ReflectionClass($class);
+            return $reflectClass->newInstance($type);
+        } catch (\ReflectionException $e) {
+            exit($class.' not exists');
+        }
     }
 
 }

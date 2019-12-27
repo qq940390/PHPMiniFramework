@@ -10,7 +10,6 @@
 
 namespace pm\base;
 
-
 class ErrorHandler
 {
 
