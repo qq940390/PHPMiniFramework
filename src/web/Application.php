@@ -24,7 +24,7 @@ class Application extends \pm\base\Application
      */
     public function init()
     {
-        $this->jsonCallback = $_GET['callback'];
+        $this->jsonCallback = isset($_GET['callback']) ? $_GET['callback'] : '';
     }
 
     /**
