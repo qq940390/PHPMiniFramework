@@ -10,7 +10,6 @@
 
 namespace pm\exception;
 
-
 class UnknownClassException extends Exception
 {
     /**

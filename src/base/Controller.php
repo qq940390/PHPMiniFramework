@@ -27,7 +27,6 @@ class Controller extends Component
     /**
      * 执行 action
      * @param $actionID
-     * @return mixed
      * @throws \ReflectionException
      */
     public function runAction($actionID)
@@ -43,9 +42,29 @@ class Controller extends Component
 
         $inlineAction = new \ReflectionMethod(self::className(), $actionID);
         if($inlineAction) {
-            return $inlineAction->invoke($this, $actionID);
+            $inlineAction->invoke($this, $actionID);
         } else {
             throw new \pm\exception\UnknownMethodException('Calling unknown method: ' . get_class($this) . "::$actionID()");
         }
+    }
+
+    /**
+     * 视图渲染输出
+     * @param $viewName
+     * @param array $data
+     */
+    public function render($viewName, $data = [])
+    {
+
+    }
+
+    /**
+     * JSON渲染输出
+     * @param array $data
+     * @param bool|string $jsonpCallback JSONP的callback回调函数名
+     */
+    public function renderAjax($data, $jsonpCallback = false)
+    {
+        echo $jsonpCallback === false ? \pm\helper\Format::toJSON($data) : \pm\helper\Format::toJSONP($data, $jsonpCallback);
     }
 }

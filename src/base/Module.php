@@ -24,25 +24,17 @@ class Module extends Component
     /**
      * 执行控制器方法
      * @param $route
-     * @return mixed
      * @throws \ReflectionException
+     * @throws \pm\exception\UnknownClassException
      */
     public function runAction($route)
     {
         $parts = $this->createController($route);
         if (is_array($parts)) {
             list($controller, $actionID) = $parts;
-            $oldController = PM::$app->controller;
-            PM::$app->controller = $controller;
             /* @var \pm\base\Controller $controller */
-            $result = PM::$app->controller->runAction($actionID);
-            if ($oldController !== null) {
-                PM::$app->controller = $oldController;
-            }
-
-            return $result;
-        } else {
-            exit('Wrong Controller!');
+            PM::$app->controller = $controller;
+            PM::$app->controller->runAction($actionID);
         }
     }
 
@@ -82,5 +74,4 @@ class Module extends Component
         }
         return [$controller, $action];
     }
-
 }

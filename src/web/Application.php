@@ -14,49 +14,15 @@ class Application extends \pm\base\Application
 {
 
     /**
-     * @var string JSONP callback function
-     */
-    public $jsonCallback = '';
-
-
-    /**
-     * init
-     */
-    public function init()
-    {
-        $this->jsonCallback = isset($_GET['callback']) ? $_GET['callback'] : '';
-    }
-
-    /**
-     * 执行并输出内容
-     */
-    public function run()
-    {
-        //调用路由组件，处理 request
-        /* @var $response \pm\web\Response */
-        $response = $this->handleRequest(new \pm\web\Request());
-
-        $response->send();
-    }
-
-    /**
      * 处理 request
-     * @param $request
-     * @return mixed|Response|null
+     * @param \pm\web\Request $request
+     * @throws \ReflectionException
+     * @throws \pm\exception\UnknownClassException
      */
     public function handleRequest($request)
     {
-        /* @var $request \pm\web\Request */
         $route = $request->resolve();
-        $result = $this->runAction($route);
-
-        if($result instanceof Response) {
-            return $result;
-        } else {
-            $response = new Response();
-            $response->data = $result;
-            return $response;
-        }
+        $this->runAction($route);
     }
 
     /**

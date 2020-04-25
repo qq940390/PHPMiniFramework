@@ -25,7 +25,7 @@ class BasePM
     public static $app;
 
     /**
-     * @var \pm\db\Database
+     * @var \pm\db\DatabaseInterface
      */
     public static $db;
 
@@ -38,20 +38,6 @@ class BasePM
         '@pm' => __DIR__,
     ];
 
-
-    /**
-     * 调试输出
-     * @param $mixed
-     */
-    public static function debug($mixed)
-    {
-        if(is_array($mixed)) {
-            print_r($mixed);
-        } elseif (is_string($mixed)) {
-            echo $mixed;
-        }
-        exit;
-    }
 
     /**
      * 自动加载器回调函数

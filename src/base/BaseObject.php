@@ -10,6 +10,8 @@
 
 namespace pm\base;
 
+use PM;
+
 /**
  * Class BaseObject
  *
@@ -31,8 +33,11 @@ class BaseObject
      *
      * @param array $config
      */
-    public function __construct()
+    public function __construct($config = [])
     {
+        if (!empty($config)) {
+            PM::configure($this, $config);
+        }
         $this->init();
     }
 
@@ -104,7 +109,7 @@ class BaseObject
      * 魔术方法 __call
      * @param string $name
      * @param array $arguments
-     * @throws UnknownMethodException when calling unknown method
+     * @throws \pm\exception\UnknownMethodException when calling unknown method
      * @return mixed the method return value
      */
     public function __call($name, $arguments)
@@ -116,7 +121,7 @@ class BaseObject
      * 魔术方法 __callStatic
      * @param string $name
      * @param array $arguments
-     * @throws UnknownMethodException when calling unknown method
+     * @throws \pm\exception\UnknownMethodException when calling unknown method
      * @return mixed the method return value
      */
     public static function __callStatic($name, $arguments)
@@ -134,4 +139,5 @@ class BaseObject
     {
         return method_exists($this, $name);
     }
+
 }

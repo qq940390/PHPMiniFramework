@@ -20,7 +20,7 @@ namespace pm\exception;
  * @subpackage JDB
  * @version 1.0
  */
-class DbException extends \Exception{
+class DbException extends Exception{
 
     /**
      * @var string SQL语句

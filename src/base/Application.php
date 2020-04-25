@@ -20,9 +20,14 @@ use PM;
 abstract class Application extends Module
 {
     /**
-     * @var Controller the currently active controller instance
+     * @var \pm\web\Controller 实例当前的控制器
      */
     public $controller;
+
+    /**
+     * @var string 编码
+     */
+    public $charset = 'UTF-8';
 
 
     /**
@@ -39,13 +44,21 @@ abstract class Application extends Module
 
         PM::$db = PM::createObject($config['db']);
 
-        $this->init();
+        parent::__construct($config);
+    }
+
+    /**
+     * 执行并输出内容
+     */
+    public function run()
+    {
+        //调用路由组件，处理 request
+        $this->handleRequest(new \pm\web\Request());
     }
 
     /**
      * 处理 request
      * @param $request
-     * @return mixed
      */
     abstract public function handleRequest($request);
 

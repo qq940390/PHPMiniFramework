@@ -10,7 +10,6 @@
 
 namespace pm\exception;
 
-
 class InvalidConfigException extends Exception
 {
     /**

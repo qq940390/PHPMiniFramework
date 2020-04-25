@@ -10,7 +10,11 @@
 
 namespace pm\web;
 
-
+/**
+ * Class Controller
+ *
+ * @package pm\web
+ */
 class Controller extends \pm\base\Controller
 {
 
